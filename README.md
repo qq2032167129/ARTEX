@@ -5,17 +5,28 @@
 AI 自主渗透测试系统（Go 后端 + Next.js 前端）
 
 
-🌐 **在线 Demo（模拟数据）**： [https://artex-demo.mhtsec.com](https://artex-demo.mhtsec.com)
+📦 **当前仓库**：[qq2032167129/ARTEX](https://github.com/qq2032167129/ARTEX)
 
-📦 **该仓库为ARTEX最后一个版本纯源码备份。原 Docker 镜像源 `autumn27/artex` 已失效，现由本仓库自维护镜像 `mianhuatang11/artex`（Docker Hub）；拉取失败时可 `docker compose build` 从纯源码本地构建，无任何外部预编译依赖。**
+基于 [mhtsec/ARTEX](https://github.com/mhtsec/ARTEX) 的个人 Fork，用于源码学习、研究与本地技术验证。
+
+项目原作者及贡献者的署名、开源协议与使用声明予以保留。本仓库的代码和文档以当前分支为准。
 
 </div>
 
 ---
 
+## 仓库说明
+
+- **源码与问题反馈**：[本仓库](https://github.com/qq2032167129/ARTEX) · [Issues](https://github.com/qq2032167129/ARTEX/issues) · [Pull Requests](https://github.com/qq2032167129/ARTEX/pulls)。反馈时请附上部署方式、版本和复现步骤，并隐去密钥及目标敏感信息。
+- **来源**：直接 Fork 自 [mhtsec/ARTEX](https://github.com/mhtsec/ARTEX)，原项目来自 [Autumn-27/ARTEX](https://github.com/Autumn-27/ARTEX)。感谢原作者和所有贡献者。
+- **部署方式**：推荐从本仓库源码构建。当前本仓库尚未发布预编译 Release；现有 Compose 默认引用的 `mianhuatang11/artex` 是上游提供的镜像，不代表本 Fork 的代码。
+- **演示与外部服务**：下方演示站由上游提供，使用模拟数据，展示内容可能与本仓库不同；其可用性由对应维护者负责。
+
+---
+
 ## 截图预览
 
-> 完整交互见[在线 Demo](https://artex-demo.mhtsec.com)（纯前端 + Mock 数据，无需后端）。
+> 可参考[上游在线 Demo](https://artex-demo.mhtsec.com)（纯前端 + Mock 数据，无需后端）。截图沿用上游，仅供功能预览。
 
 | 仪表盘（总览 / Token 消耗 / 活动流） | 任务列表 |
 | :---: | :---: |
@@ -51,7 +62,7 @@ AI 自主渗透测试系统（Go 后端 + Next.js 前端）
 ## 审批记录详情
 
 全局「审批记录」、任务内「拦截审批」及对话中的审批卡片均支持展开查看详情。展示结构参考
-[AegisHook 的审批详情组件](https://github.com/RuoJi6/AegisHook/blob/main/web/src/components/CallDetail.vue)，沿用 ARTEX 的组件和主题：
+[AegisHook 的审批详情组件](https://github.com/RuoJi6/AegisHook/blob/main/web/src/components/CallDetail.vue)，沿用 ARTEX 的组件和主题。
 
 
 ## 资产同步（ScopeSentry）
@@ -68,10 +79,10 @@ AI 自主渗透测试系统（Go 后端 + Next.js 前端）
 
 > 依赖数据库 **PostgreSQL**；探索需配置 **LLM**（`ANTHROPIC_API_KEY` 或 `OPENAI_API_KEY`，也可在 UI 里配）。
 
-### 方式一：一键安装脚本（推荐）
+### 方式一：一键安装脚本
 
 ```bash
-git clone https://github.com/mhtsec/ARTEX.git
+git clone https://github.com/qq2032167129/ARTEX.git
 cd ARTEX
 ./install.sh
 ```
@@ -81,21 +92,24 @@ cd ARTEX
 - **① 全部 Docker**：填一个 Postgres 密码（可回车随机）→ 自动写 `.env` → `docker compose up -d`。
 - **② 本地运行**：选数据库（连已有 / 用 Docker 起一个）→ 生成 `config.json` → `go` 编译内嵌单二进制 → 启动。
 
+> 脚本的 Docker 模式默认拉取上游镜像。若要运行本 Fork 的源码，请使用下方方式二进行本地构建，或选择脚本的本地编译模式（需安装 Go 和 Node.js/npm）。
+
 装好后打开 **http://localhost:8787**（首次进入 `/setup` 设置管理员密码）。
 
-### 方式二：Docker Compose（手动）
+### 方式二：Docker Compose（从本仓库源码构建，推荐）
 
 ```bash
-git clone https://github.com/mhtsec/ARTEX.git
+git clone https://github.com/qq2032167129/ARTEX.git
 cd ARTEX
 cp .env.example .env          # 填 POSTGRES_PASSWORD、可选 ANTHROPIC_API_KEY
-docker compose up -d          # 拉取 mianhuatang11/artex 镜像 + postgres
+docker compose pull postgres  # 拉取数据库镜像
+docker compose build artex    # 使用当前仓库源码构建应用镜像
+docker compose up -d --pull never  # 使用本地应用镜像启动（需已拉取 postgres:16-alpine）
 # → http://localhost:8787
 ```
 
-> 原镜像源 `autumn27/artex` 已从 Docker Hub 删除，镜像现由本仓库自维护为 **`mianhuatang11/artex`**。
-> 镜像源不可用（或想自行改代码）时，本地从纯源码构建即可：`docker compose build && docker compose up -d`。
-> Dockerfile 为多阶段构建（前端静态导出 → Go 静态编译 → 运行镜像），默认走国内友好依赖源，可加 `--build-arg GOPROXY=... / --build-arg NPM_REGISTRY=...` 覆盖。
+> Compose 中的应用镜像名仍为 `mianhuatang11/artex:${ARTEX_TAG:-latest}`，本地构建会使用该标签；标签名不代表镜像由本仓库发布。上面的启动命令使用本地构建结果。之后执行 `docker compose pull artex` 会拉取上游镜像并覆盖该标签，因此更新本 Fork 时请按下文重新构建。
+> Dockerfile 为多阶段构建（前端静态导出 → Go 静态编译 → 运行镜像），默认使用国内依赖源；可通过 `--build-arg GOPROXY=...` / `--build-arg NPM_REGISTRY=...` 覆盖。构建仍需联网下载基础镜像和依赖。
 
 镜像已含常用工具（ripgrep/curl/vim/npm/nmap…）；`./skills` 与 `./data` 以绑定挂载持久化。
 
@@ -104,25 +118,29 @@ docker compose up -d          # 拉取 mianhuatang11/artex 镜像 + postgres
 `/message?sessionId=...` 接收 JSON-RPC 请求；配置时将 URL 填为 `/sse`，请求头按
 `Authorization=Bearer <token>` 填写。
 
-### 方式三：下载预编译二进制（Releases）
+### 方式三：上游预编译二进制（可选）
 
-到原仓库 [Releases](https://github.com/Autumn-27/ARTEX/releases) 下载对应平台的 zip（**本备份仓库不托管二进制**，若原 Releases 也失效请用方式二或方式四）：解压后得到 `artex` + `start.sh`（Windows 为 `start.bat`）+ `skills/` + `config.example.json`：
+本仓库的 [Releases](https://github.com/qq2032167129/ARTEX/releases) 当前尚无预编译发布包。若选择原项目的 [Releases](https://github.com/Autumn-27/ARTEX/releases)，请注意其可用性及版本由原作者维护，**内容不代表本 Fork**；若不可用或需要运行本仓库代码，请用方式二或方式四。上游发布包的使用方式为：解压后得到 `artex` + `start.sh`（Windows 为 `start.bat`）+ `skills/` + `config.example.json`：
 
 ```bash
 cp config.example.json config.json   # 填好 database 连接
 ./start.sh                           # → http://localhost:8787
 ```
 
-> 请用 `start.sh` / `start.bat` 启动，而不是直接跑 `./artex`。它是个守护脚本：程序退出后按退出码决定是否重新拉起，**页面上的[一键更新](#方式一页面一键更新推荐)靠它完成换装**。直接运行 `./artex` 时更新完就不会被拉起了。
+> 请用 `start.sh` / `start.bat` 启动，而不是直接跑 `./artex`。它是个守护脚本：程序退出后按退出码决定是否重新拉起，**页面上的[一键更新](#页面一键更新上游发布源)靠它完成换装**。直接运行 `./artex` 时更新完就不会被拉起了。
 > 后台常驻：`nohup ./start.sh >artex.log 2>&1 &`。
 
 ### 方式四：从源码编译单二进制
 
+需要 Go 1.26.3 或更高版本、Node.js/npm，以及可连接的 PostgreSQL。以下命令在本仓库根目录执行；启动前复制 `config.example.json` 为 `config.json` 并填写数据库连接。
+
 ```bash
+cp config.example.json config.json
 # 1) 前端静态导出
 cd web && npm ci && npm run build:static && cd ..
 # 2) 拷进内嵌目录
-cp -r web/out server/webui/dist
+mkdir -p server/webui/dist
+cp -R web/out/. server/webui/dist/
 # 3) 编译（-tags embedui 才内嵌前端）
 CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 ./start.sh
@@ -134,7 +152,7 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 
 ```bash
 ./build.sh --release
-# 产物：dist/artex-0.3.3-*.zip
+# 产物：dist/artex-<版本>-<系统>-<架构>.zip
 ```
 
 UPX 自解压二进制可能与部分 Linux 内核、虚拟化环境或安全策略不兼容，因此默认不启用。可用 `ARTEX_TARGETS` 自定义目标；确认目标运行环境兼容时，可显式传入 `--upx` 进一步缩小二进制：
@@ -150,18 +168,23 @@ ARTEX_TARGETS=linux/amd64,windows/amd64 ./build.sh --release
 
 > 升级只换程序、不动数据：Postgres 数据卷 `pgdata`、`./data`（jwt.key / SQLite 等）、`./skills` 都会保留。**数据库迁移无需手动执行**——`artex` 每次启动会幂等重跑 `schema.sql`（含 `ADD COLUMN` / `CREATE INDEX IF NOT EXISTS`），即“重启即迁移”。升级前仍建议先备份 `./data` 与数据库。
 
-### 方式一：页面一键更新（推荐）
+### 方式一：从本仓库源码更新（推荐）
 
-在 **系统配置** 页（侧边栏「系统配置」→ `/system/settings`）的**版本与更新**卡片里，可以直接检查并安装新版本，无需登录服务器。
+先备份数据库、`config.json`、`.env`、`data/` 和自定义 `skills/`，保存本地修改，再在仓库根目录执行：
 
-点「更新」后：下载当前平台的发布包 → 比对 Release 的 `SHA256SUMS` → 用 `-h` 冒烟测试新二进制 → 暂存为 `artex.new` → 程序退出，由 `start.sh` / `start.bat` 重新拉起并完成换装。页面会自动等到新版本上线后刷新。
+```bash
+git remote -v  # 确认 origin 指向 qq2032167129/ARTEX
+git pull --ff-only origin main
+```
 
-- **失败不会留下坏程序**：校验或冒烟不通过就丢弃暂存件、继续跑当前版本；换装后的新版若连续 3 次启动失败，会自动回滚到 `artex.old`（失败的那个留作 `artex.failed` 供排查）。
-- **随时可回退**：上一版本保留为 `artex.old`，卡片上有「回滚到上一版本」。注意数据库结构不会回退。
-- **更新会中断正在运行的任务**——更新即重启，请在空闲时进行。
-- **开发构建不给更新**：版本号是 `dev` 或 `git describe` 带后缀时禁用，避免正式版覆盖掉本地调试的二进制。
-- **Docker 下只换程序、不换镜像**：镜像里的 playwright / nmap 等工具链不会跟着升级，且 `docker compose up -d` 重建容器后会退回镜像自带的版本。要连镜像一起升级仍请用 `docker compose pull artex && docker compose up -d artex`。
-- 访问 GitHub 需要代理时，在同一页面配置**全局代理**即可，更新链路会走它。更新只从 GitHub 域名下载并强制 HTTPS。
+**Docker 部署**：重新构建并重建应用容器，保留数据库及挂载数据：
+
+```bash
+docker compose build artex
+docker compose up -d --no-deps --force-recreate --pull never artex
+```
+
+**本地二进制部署**：按安装部分的「方式四」重新编译，再重启 `start.sh` / `start.bat`。更新会重启服务，请在任务空闲时进行。
 
 ### 方式二：一键更新脚本
 
@@ -170,40 +193,15 @@ cd ARTEX
 ./update.sh
 ```
 
-脚本先可选 `git pull` 拉取最新代码，再让你选 **① Docker 更新** 或 **② 本地编译更新**（与 `install.sh` 对应）：
+脚本可拉取代码，然后选择 Docker 更新或本地编译更新。**Docker 选项执行的是拉取上游镜像，不会从本 Fork 源码构建**；如需保留本仓库版本，请使用方式一。本地编译选项会重建前端与二进制，完成后需重启进程。
 
-- **① Docker**：可指定目标镜像 tag（回车沿用 `.env` 的 `ARTEX_TAG`，缺省 `latest`）→ `docker compose pull` → `docker compose up -d`（换新镜像重启即自动迁移）。
-- **② 本地**：重建前端静态产物 → 重新编译 `./artex`（完成后重启进程生效）。
+### 页面一键更新（上游发布源）
 
-### 方式三：Docker Compose（手动）
+程序保留了「系统配置 → 版本与更新」功能，但当前 `selfupdate/github.go` 中的发布源仍固定为 `Autumn-27/artex`，**并未指向 `qq2032167129/ARTEX`**。该功能查询和安装的是原项目的 Release，无法用于升级本 Fork；上游发布源不可用时也会失败。使用本仓库代码部署时，推荐按方式一更新。
 
-```bash
-cd ARTEX
-git pull                       # 更新 compose / 脚本（可选）
-# 指定版本：在 .env 设 ARTEX_TAG=v0.2.0；不设则用 latest
-docker compose pull artex
-docker compose up -d artex     # 换新镜像重启 → 自动迁移 schema
-docker image prune -f          # 清理旧镜像（可选）
-```
+上游更新机制包括发布包 SHA256 校验、启动检查、通过守护启动脚本换装及回滚；开发构建可能禁用此功能。页面更新会中断运行中的任务，且不会更新 Docker 镜像中的工具链。
 
-### 方式四：预编译二进制（Releases）
-
-到 [Releases](https://github.com/Autumn-27/ARTEX/releases) 下载新版本 zip，停掉旧进程后覆盖 `artex` 与 `skills/`（保留你的 `config.json` 与 `data/`），重启即可：
-
-```bash
-cp -r <解压目录>/skills ./ && cp <解压目录>/artex ./
-./start.sh
-```
-
-### 方式五：从源码编译
-
-```bash
-git pull
-cd web && npm ci && npm run build:static && cd ..
-cp -r web/out server/webui/dist
-CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
-# 重启 ./start.sh
-```
+如需手动使用原项目发布包，可查看[上游 Releases](https://github.com/Autumn-27/ARTEX/releases)；其版本与本 Fork 可能不同，替换程序前请确认差异并备份数据。
 
 ---
 
@@ -283,10 +281,10 @@ server {
 - 前端：`cd web && npm run dev`（`/api` 反代到后端，带热更新）
 - 测试：`go test ./...`
 - Mock 预览（无后端）：`cd web && NEXT_PUBLIC_MOCK=1 npm run dev`
-- 在线 Demo 重新部署（Cloudflare Pages，静态导出 + Mock 数据）：
+- 自行部署模拟演示（Cloudflare Pages，需使用自己的账号、项目及访问令牌）：
   ```bash
   cd web && NEXT_PUBLIC_MOCK=1 npm run build:static
-  CLOUDFLARE_API_TOKEN=<token> npx wrangler pages deploy out --project-name=artex-demo --branch=main
+  CLOUDFLARE_API_TOKEN=<token> npx wrangler pages deploy out --project-name=<你的项目名> --branch=main
   ```
 
 ---
@@ -461,20 +459,17 @@ flowchart TB
 
 ---
 
-## 交流群
+## 反馈与贡献
 
-扫码关注微信公众号 **SecSentry**，在公众号后台私信即可入群交流。
+欢迎通过本仓库的 [Issues](https://github.com/qq2032167129/ARTEX/issues) 反馈问题，或提交 [Pull Request](https://github.com/qq2032167129/ARTEX/pulls) 改进代码与文档。提交前请说明问题背景、改动内容及验证方式。
 
-<div align="center">
-
-<img src="screenshots/wx.png" alt="微信公众号 SecSentry" width="480" />
-
-</div>
+原项目的社区与联系方式请参阅[上游仓库](https://github.com/mhtsec/ARTEX)。
 
 ---
+
 ## 参考
 
-https://github.com/oritera/Cairn
+[oritera/Cairn](https://github.com/oritera/Cairn)
 
 
 ## 许可与免责声明
